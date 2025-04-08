@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { imageToAscii } from "@/utils/imageToAscii";
-import { Box, Card } from "@radix-ui/themes";
+import { Box, Button, Card, Tooltip } from "@radix-ui/themes";
 import { Vibrant } from "node-vibrant/browser";
+import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 
 export default function AsciiConverter() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -19,6 +20,16 @@ export default function AsciiConverter() {
     const reader = new FileReader();
     reader.onload = () => setImageSrc(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  const handleClick = () => {
+    const fileUploadElement = document.getElementById('file-upload');
+
+    if (fileUploadElement instanceof HTMLInputElement) {
+      fileUploadElement.click();
+    } else {
+      console.error("L'élément avec l'ID 'file-upload' n'existe pas ou n'est pas un input.");
+    }
   };
 
   useEffect(() => {
@@ -53,9 +64,20 @@ export default function AsciiConverter() {
   return (
     <div className="flex flex-row items-center gap-4 p-4 justify-center">
       <Box width="350px" height="350px">
-        <Card className="w-full h-full flex items-center justify-center">
+        <Card className="w-full h-full flex items-center justify-center relative">
           {imageSrc ? (
-            <img src={imageSrc} alt="Preview" className="w-full h-full object-cover rounded" style={{ borderRadius: '5px' }} />
+            <>
+              <img src={imageSrc} alt="Preview" className="w-full h-full object-cover rounded" style={{ borderRadius: '5px' }} />
+              <Tooltip content="Nouvelle image">
+              <Button 
+                color="gray"
+                onClick={handleClick}
+                className="!absolute !top-0 !right-0 !m-4"
+              >
+                <PlusIcon />
+              </Button>
+              </Tooltip>
+            </>
           ) : (
             <label htmlFor="file-upload" className="cursor-pointer text-gray-500 flex items-center justify-center w-full h-full">
               Choisir une image
