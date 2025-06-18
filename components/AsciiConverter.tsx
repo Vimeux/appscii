@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { imageToAscii } from "@/utils/imageToAscii";
 import { Box, Button, Card, Tooltip } from "@radix-ui/themes";
 import { Vibrant } from "node-vibrant/browser";
-import { PlusIcon, TrashIcon } from "@radix-ui/react-icons";
+import { PlusIcon, TrashIcon, DownloadIcon } from "@radix-ui/react-icons";
 
 export default function AsciiConverter() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -32,6 +32,17 @@ export default function AsciiConverter() {
     }
   };
 
+  const handleDownload = () => {
+    if (!canvasRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    const link = document.createElement('a');
+    link.download = `ascii-art-${fileName || 'download'}.jpg`;
+    link.href = dataUrl;
+    link.click();
+  };
+
   useEffect(() => {
     if (!imageSrc || !canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -40,14 +51,13 @@ export default function AsciiConverter() {
 
     const image = new Image();
     image.src = imageSrc;
-    image.onload = () => {
+    image.onload = async () => {
       const vibrant = new Vibrant(image);
-      vibrant.getPalette().then((palette: any) => {
-        console.log(palette);
-      });
+      const palette = await vibrant.getPalette();
+      // const dominantColor = palette.Vibrant?.hex || '#000000';
 
-      const maxWidth = 1000;
-      const maxHeight = 1000;
+      const maxWidth = 2000;
+      const maxHeight = 2000;
       const aspectRatio = image.width / image.height;
       const width = aspectRatio > 1 ? maxWidth : maxHeight * aspectRatio;
       const height = aspectRatio > 1 ? maxWidth / aspectRatio : maxHeight;
@@ -69,13 +79,13 @@ export default function AsciiConverter() {
             <>
               <img src={imageSrc} alt="Preview" className="w-full h-full object-cover rounded" style={{ borderRadius: '5px' }} />
               <Tooltip content="Nouvelle image">
-              <Button 
-                color="gray"
-                onClick={handleClick}
-                className="!absolute !top-0 !right-0 !m-4"
-              >
-                <PlusIcon />
-              </Button>
+                <Button 
+                  color="gray"
+                  onClick={handleClick}
+                  className="!absolute !top-0 !right-0 !m-4"
+                >
+                  <PlusIcon />
+                </Button>
               </Tooltip>
             </>
           ) : (
@@ -93,13 +103,24 @@ export default function AsciiConverter() {
         </Card>
       </Box>
       <Box width="350px" height="350px">
-        <Card className="w-full h-full flex items-center justify-center">
+        <Card className="w-full h-full flex items-center justify-center relative">
           <canvas 
             ref={canvasRef}
-            width={1000}
-            height={1000}
+            width={2000}
+            height={2000}
             style={{ maxWidth: '100%', height: 'auto', borderRadius: '5px' }}
           />
+          {imageSrc && (
+            <Tooltip content="Télécharger en JPEG">
+              <Button 
+                color="gray"
+                onClick={handleDownload}
+                className="!absolute !top-0 !right-0 !m-4"
+              >
+                <DownloadIcon />
+              </Button>
+            </Tooltip>
+          )}
         </Card>
       </Box>
     </div>
